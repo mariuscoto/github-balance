@@ -1,0 +1,67 @@
+!!! 5
+html
+  head
+    title= title
+    link(rel='shortcut icon', href='images/github-icon.ico')
+    link(rel='stylesheet', href='/stylesheets/bootstrap.css')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/stylesheets/datepicker.css')
+    script(type="text/javascript", src='http://code.jquery.com/jquery-1.8.1.js')
+    script(type="text/javascript", src='/javascripts/form.js')
+    script(type="text/javascript", src='/javascripts/bootstrap-datepicker.js')
+
+  body
+
+    #container
+      #header
+
+        a(href="/")
+          #logo
+
+        #nav
+        #controls
+          - if (!everyauth.loggedIn)
+            a(href="/login") Login
+          - else
+            - if (user)
+              = user.points_ideas + user.points_repos + user.points_projects + " "
+              | cups for
+              a(href="/" + user.user_name)= " " + user.user_name + " "
+            a(href="/logout")
+              #logout
+              
+            a(href="/" + user.user_name + "/notifications")
+              .notif-box
+                - if (user.unread)
+                  .notif-unread
+                - else
+                  .notif-read
+
+
+
+      #body
+        block content
+
+
+
+      .spacer
+      .spacer
+
+      #footer
+        #copyright
+          b &copy; Github-balance, 2014
+        #logo-footer
+        #menu-footer
+          ul
+            li
+              a(href="/faq") FAQ
+            li
+              a(href="/contact") Contact
+
+  include ../public/javascripts/analytics.js
+
+  - if (everyauth.loggedIn)
+    script var username = "#{user.user_name}"; var cups = "#{user.points_repos+user.points_ideas+user.points_projects}";
+
+
+  include ../public/javascripts/facebook.html
