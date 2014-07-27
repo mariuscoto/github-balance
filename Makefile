@@ -9,7 +9,7 @@ setup: package.json
 	NODE_ENV=development
 
 	mongod &
-	mongorestore -d github-connect ghconnect_db/github-connect
+	mongorestore -d github-balance ghbalance_db/github-balance
 	killall mongod
 
 test:
@@ -23,14 +23,14 @@ run:
 	@node app.js
 
 db-export:
-	rm -rf ghconnect_db
+	rm -rf ghbalance_db
 	mongod &
-	mongodump -d github-connect -o ghconnect_db
+	mongodump -d github-balance -o ghbalance_db
 
 db-import:
 	mongod &
-	mongorestore -d github-connect ghconnect_db/github-connect
+	mongorestore -d github-balance ghbalance_db/github-balance
 
 db-drop:
 	mongod &
-	mongo github-connect --eval "db.dropDatabase();"
+	mongo github-balance --eval "db.dropDatabase();"
