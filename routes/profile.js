@@ -5,30 +5,6 @@ var core 		= require('../core.js');
 
 
 /*
-Edit user information.
-Can change location (+visibility), email (+visibility), full name.
-*/
-exports.edit = function(req, res) {
-  var email = false, loc = false;
-  if (req.body.email_pub) email = true;
-  if (req.body.location_pub) loc = true;
-
-  var conditions = { 'user_id': req.session.auth.github.user.id };
-  var update = {$set: {
-    'location': 			req.body.location,
-    'user_fullname':  req.body.fullname,
-    'user_email': 		req.body.email,
-    'location_pub':   loc,
-    'email_pub':  		email
-  }};
-  Users.update(conditions, update, function (err, num) {
-    console.log("* " + req.session.auth.github.user.login + " made profile changes.");
-    res.redirect('/' + req.session.auth.github.user.login);
-  });
-}
-
-
-/*
 User profile page. Shows all info about selected user.
 */
 exports.index = function(req, res) {
@@ -40,9 +16,6 @@ exports.index = function(req, res) {
     else {
 
       Users.findOne ({ 'user_id': uid }, function(err, user) {
-
-        // List just first 3 repos
-        cuser.repos = cuser.repos.slice(0, 3);
 
         res.render('profile', {
           title:      cuser.user_fullname,
@@ -103,59 +76,6 @@ exports.notifications = function(req, res) {
   })
 }
 
-
-/*
-Repositories tab.
-*/
-exports.repos = function(req, res) {
-  var uid = ((req.session.auth) ? req.session.auth.github.user.id : null);
-
-  Users.findOne ({ 'user_name': req.params.user }, function(err, cuser) {
-    if (!cuser) return res.render('404', {title: "404: File not found"});
-    else {
-
-      Users.findOne ({ 'user_id': uid }, function(err, user) {
-
-        res.render('profile', {
-          'title':      cuser.user_fullname,
-          'currentUrl': 'repos',
-          'cuser':      cuser,
-          'user':       user
-        })
-
-      })
-    }
-  })
-}
-
-
-/*
-Edit profile tab.
-*/
-exports.edit_profile = function(req, res) {
-  var uid = ((req.session.auth) ? req.session.auth.github.user.id : null);
-
-  Users.findOne ({ 'user_name': req.params.user }, function(err, cuser) {
-    if (!cuser) return res.render('404', {title: "404: File not found"});
-    else {
-
-      Users.findOne ({ 'user_id': uid }, function(err, user) {
-
-        // Users can edit only their own profile
-        if (!user || user.user_name != cuser.user_name)
-          res.redirect('/' + cuser.user_name);
-        else
-          res.render('profile', {
-            title:      cuser.user_fullname,
-            currentUrl: 'edit_profile',
-            cuser:      cuser,
-            user:       user
-          })
-
-      })
-    }
-  })
-}
 
 /*
 Remove user account and all associated content.

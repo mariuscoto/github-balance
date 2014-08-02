@@ -6,7 +6,7 @@ global.config = [];
 app.configure('development', function(){
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
   global.config.redis_secret = 'big secret'
-  //global.config = require('./lib/config')
+  global.config = require('./lib/config')
   global.config.status = 'dev';
 });
 
@@ -81,11 +81,8 @@ app.get('/contact', other.contact);
 app.post('/contact', other.feedback);
 
 var profile = require('./routes/profile.js');
-app.get('/:user/repos', profile.repos)
-app.get('/:user/remove', ensureAuth, profile.remove)
-app.get('/:user/edit', profile.edit_profile)
-app.get('/:user/notifications', profile.notifications)
-app.post('/profile/edit', ensureAuth, profile.edit);
+app.get('/:user/remove', ensureAuth, profile.remove);
+app.get('/:user/notifications', profile.notifications);
 
 var admin = require('./routes/admin.js');
 app.get('/admin', ensureSuper, admin.index);

@@ -42,9 +42,8 @@ set-env:
 	heroku config:set NODE_ENV=production
 	heroku config:set mail_user=cmarius02
 	heroku config:set mail_pass=cjqjlwvbwbyyuagz
-	heroku config:set nodetime=dd932267a8b80ffc83d99261ba16cf0fb84a139e
-	heroku config:set clientId=213da0a6cf252e156685
-	heroku config:set secret=c31aa279cb424b01be9364fb98446cd14cf89e8c
+	heroku config:set clientId=02efae625135a4cf2274
+	heroku config:set secret=d251734deee8e286313e0aab214e8176a6d26217
 	heroku config:set redis_secret=awesome_app_is_awesome
 	heroku config:set db_name=marius
 	heroku config:set db_pass=mar!us07Znn

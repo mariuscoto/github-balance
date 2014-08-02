@@ -49,7 +49,7 @@ mongoose.model( 'Repo', Repo );
 mongoose.model( 'Notifications', Notifications );
 
 
-if (global.config.status == 'dev')
-  mongoose.connect( 'mongodb://localhost/github-connect' );
+if (global.config.status == 'dev2')
+  mongoose.connect( 'mongodb://localhost/github-balance' );
 else
-  mongoose.connect('mongodb://'+global.config.db_name+':'+global.config.db_pass+'@troup.mongohq.com:10059/github-connect');
+  mongoose.connect('mongodb://'+global.config.db_name+':'+global.config.db_pass+'@kahana.mongohq.com:10039/github-balance');

@@ -10,7 +10,7 @@ Visit /login/$USER to login as $USER.
 */
 exports.login = function(req, res) {
   // Use an offline account. Add user if not existent.
-  if (global.config.status == 'dev') {
+  if (global.config.status == 'dev2') {
     if (!req.params.user) {
       // If no username provided, redirect to default.
       return res.redirect('/login/dev_user');
