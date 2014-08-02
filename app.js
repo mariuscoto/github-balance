@@ -6,7 +6,7 @@ global.config = [];
 app.configure('development', function(){
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
   global.config.redis_secret = 'big secret'
-  global.config = require('./lib/config')
+  // global.config = require('./lib/config')
   global.config.status = 'dev';
 });
 
@@ -75,7 +75,7 @@ app.configure(function() {
 var other = require('./routes/other.js');
 app.get('/', other.login);
 app.get('/login', other.login);
-app.get('/login/:user', other.login);
+app.get('/login/:user', other.login_user);
 app.get('/faq', other.faq);
 app.get('/contact', other.contact);
 app.post('/contact', other.feedback);

@@ -9,8 +9,22 @@ This will provide a session and create a new user if necessary.
 Visit /login/$USER to login as $USER.
 */
 exports.login = function(req, res) {
-  // Use an offline account. Add user if not existent.
-  if (global.config.status == 'dev2') {
+  if (req.session.auth)
+    return res.redirect('/' + req.session.auth.github.user.login);
+
+  res.render('login', {
+    'title':  "Log in",
+    'status': global.config.status,
+    'tab':    req.query.rf
+  });
+};
+
+
+/*
+Offline login. Works only in dev env.
+*/
+exports.login_user = function(req, res) {
+  if (global.config.status == 'dev') {
     if (!req.params.user) {
       // If no username provided, redirect to default.
       return res.redirect('/login/dev_user');
@@ -28,6 +42,7 @@ exports.login = function(req, res) {
         forks_count:    3,
         watchers_count: 5,
         closed_pulls:   3,
+        points:         7
       };
       var update = {
         user_id:       u.id,
@@ -51,18 +66,10 @@ exports.login = function(req, res) {
       });
     }
 
-  // Load login or redirect user to profile page if already logged in.
   } else {
-    if (req.session.auth)
-      return res.redirect('/' + req.session.auth.github.user.login);
-
-    res.render('login', {
-      'title':  "Log in",
-      'status': global.config.status,
-      'tab':    req.query.rf
-    });
+    res.redirect('/login')
   }
-};
+}
 
 
 /*
