@@ -35,7 +35,9 @@ block content
           - if (user.user_name == cuser.user_name)
             a(href='/' + user.user_name + '/notifications') Notifications
             br
-            a(href='#', onclick='shareOnFacebook()') Share score
+            a(href='#', onclick='shareOnFacebook()') Share on Facebook
+            br
+            a(href="https://twitter.com/share?text=I have " + user.points_repos + " cups", data-lang="en") Share on Twitter
             br
             a(href='/' + user.user_name + '/remove') Remove profile
             br
