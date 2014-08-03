@@ -151,6 +151,8 @@ function update_pull_req (repo, stars, owner, user_name, accessToken) {
 
         // update pulls count, inc tentacles, add points, update total
         var pull_value = MACRO.USER.PULL + MACRO.USER.STAR * stars
+        console.log('stars:' + stars)
+        console.log('val:' + pull_value)
         var conditions = {'user_name': user_name, 'repos.name': repo};
         var update = {
           $inc: {'points_repos': diff * pull_value},
