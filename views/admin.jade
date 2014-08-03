@@ -1,5 +1,11 @@
 extends layout
 
 block content
-  h1 Stats
-  p TODO:
+
+  h1= 'Users (' + all.length + ')'
+  br
+  - each u in all
+    #user
+      a(href='http://www.github.com/' + u.user_name)= u.user_name
+      b= ' -- ' + u.points_repos
+      p= u.last_seen

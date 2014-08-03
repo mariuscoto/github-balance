@@ -47,10 +47,8 @@ html
             li
               a(href="/contact") Contact
 
-  include ../public/javascripts/analytics.js
-
   - if (everyauth.loggedIn)
     script var username = "#{user.user_name}"; var cups = "#{user.points_repos}";
 
-
+  include ../public/javascripts/analytics.js
   include ../public/javascripts/social.html
