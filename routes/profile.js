@@ -19,6 +19,7 @@ exports.index = function(req, res) {
     else {
 
       Users.findOne ({ 'user_id': uid }, function(err, user) {
+        if (!user) return res.redirect('/login')
 
         res.render('profile', {
           title:      cuser.user_fullname,
