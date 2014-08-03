@@ -8,6 +8,9 @@ var core 		= require('../core.js');
 User profile page. Shows all info about selected user.
 */
 exports.index = function(req, res) {
+  // Only logged in users can see profiles
+  if (!req.session.auth) return res.redirect('/login')
+
   var cname = req.url.substring(1, (req.url + '/').substring(1).indexOf('/')+1);
   var uid = ((req.session.auth) ? req.session.auth.github.user.id : null);
 

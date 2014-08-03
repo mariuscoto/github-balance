@@ -6,10 +6,8 @@ var Users = new Schema({
   user_name:       String,
   user_fullname:   String,
   user_email:      String,
-  email_pub:       {type: Boolean, default: true},
   avatar_url:      String,
   location:        String,
-  location_pub:    {type: Boolean, default: true},
   followers_no:    {type: Number, default: 0},
   following_no:    {type: Number, default: 0},
   join_github:     {type: String, default: Date.now},
@@ -49,7 +47,7 @@ mongoose.model( 'Repo', Repo );
 mongoose.model( 'Notifications', Notifications );
 
 
-if (global.config.status == 'dev')
+if (global.config.status == 'dev2')
   mongoose.connect( 'mongodb://localhost/github-balance' );
 else
   mongoose.connect('mongodb://'+global.config.db_name+':'+global.config.db_pass+'@kahana.mongohq.com:10039/github-balance');

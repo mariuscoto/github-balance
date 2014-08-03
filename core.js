@@ -91,7 +91,7 @@ function update_repo_owner(repo, user_name, accessToken) {
   request.end();
 }
 
-function update_pull_req (repo, owner, user_name, accessToken) {
+function update_pull_req (repo, stars, owner, user_name, accessToken) {
   var options = {
     host: "api.github.com",
     path: "/repos/" + owner + "/" + repo + "/pulls?state=closed&&access_token=" + accessToken,
@@ -150,10 +150,11 @@ function update_pull_req (repo, owner, user_name, accessToken) {
         }
 
         // update pulls count, inc tentacles, add points, update total
+        var pull_value = MACRO.USER.PULL + MACRO.USER.STAR * stars
         var conditions = {'user_name': user_name, 'repos.name': repo};
         var update = {
-          $inc: {'points_repos': diff * MACRO.USER.PULL},
-          $set: {'repos.$.points': count * MACRO.USER.PULL,
+          $inc: {'points_repos': diff * pull_value},
+          $set: {'repos.$.points': count * pull_value,
                  'repos.$.closed_pulls': count,}
         };
         Users.update(conditions, update).exec();
@@ -331,7 +332,7 @@ function update_repos (user_name, accessToken, notify) {
                 var points = 0;
                 // update existing repos + update pull req
                 if (json[k].fork) {
-                  update_pull_req(json[k].name, user.repos[y].owner, user_name, accessToken);
+                  update_pull_req(json[k].name, json[k].stargazers_count, user.repos[y].owner, user_name, accessToken);
 
                 // compute points for own repos
                 } else {
@@ -510,16 +511,14 @@ exports.login = function(sess, accessToken, accessTokenExtra, ghUser) {
           avatar_url:    usersByGhId[ghUser.id].github.avatar_url,
           location:      usersByGhId[ghUser.id].github.location,
           join_github:   usersByGhId[ghUser.id].github.created_at,
+          followers_no:  usersByGhId[ghUser.id].github.followers,
+          following_no:  usersByGhId[ghUser.id].github.following,
           join_us:       Date.now(),
           last_seen:     Date.now()
         }).save (function (err, user, count) {
           console.log("* User " + user.user_name + " added.");
           // get repos info
           get_repos(user.user_name, accessToken, false);
-          // update followers number
-          module.exports.get_followers(user.user_name, accessToken, false);
-          // update following number
-          module.exports.get_following(user.user_name, accessToken, false);
           // send welcome email
           module.exports.send_mail(user.user_email, 'welcome');
         });
