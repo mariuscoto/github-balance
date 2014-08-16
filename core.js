@@ -12,6 +12,16 @@ global.usersById = {};
 var usersByGhId = {};
 
 
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
+
+
 exports.send_mail = function (destination, type, body) {
   var nodemailer = require("nodemailer");
 
@@ -165,103 +175,6 @@ function update_pull_req (repo, stars, owner, user_name, accessToken) {
   request.end();
 }
 
-exports.get_followers = function (user_name, accessToken, notify) {
-  var options = {
-    host: "api.github.com",
-    path: "/users/" + user_name + "/followers?access_token=" + accessToken,
-    method: "GET",
-    headers: { "User-Agent": "github-connect" }
-  };
-
-  var request = https.request(options, function(response){
-    var body = '';
-    response.on("data", function(chunk){ body+=chunk.toString("utf8"); });
-    response.on("end", function(){
-      var json = JSON.parse(body);
-
-      if (notify) { // check old value
-        Users.findOne({user_name: user_name}, function(err, user) {
-          var msg, diff = user.followers_no - json.length;
-          if (diff > 0) msg = "lost " + diff;
-          else if (diff < 0) msg = -(diff) + " new";
-
-          // notify user only if we have some action going on
-          if (diff != 0) {
-            new Notifications({
-              src:    "",
-              dest:   user.user_name,
-              type:   "followers_no",
-              seen:   false,
-              date:   Date.now(),
-              link:   msg
-            }).save(function(err, todo, count ) {
-              if (err) console.log("[ERR] Notification not sent.");
-            });
-
-            var conditions = {user_name: user.user_name};
-            var update = {$set: {unread: true}};
-            Users.update(conditions, update).exec();
-          }
-        });
-      }
-
-      // update user info
-      var conditions = {user_name: user_name};
-      var update = {$set: {followers_no: json.length}};
-      Users.update(conditions, update).exec();
-    });
-  });
-  request.end();
-}
-
-exports.get_following = function (user_name, accessToken, notify) {
-  var options = {
-    host: "api.github.com",
-    path: "/users/" + user_name + "/following?access_token=" + accessToken,
-    method: "GET",
-    headers: { "User-Agent": "github-connect" }
-  };
-
-  var request = https.request(options, function(response){
-    var body = '';
-    response.on("data", function(chunk){ body+=chunk.toString("utf8"); });
-    response.on("end", function(){
-      var json = JSON.parse(body);
-
-      if (notify) { // check old value
-        Users.findOne({user_name: user_name}, function(err, user) {
-          var msg, diff = user.following_no - json.length;
-          if (diff > 0) msg = "lost " + diff;
-          else if (diff < 0) msg = -(diff) + " new";
-
-          // notify user only if we have some action going on
-          if (diff != 0) {
-            new Notifications({
-              src:    "",
-              dest:   user.user_name,
-              type:   "following_no",
-              seen:   false,
-              date:   Date.now(),
-              link:   msg
-            }).save(function(err, todo, count ) {
-              if (err) console.log("[ERR] Notification not sent.");
-            });
-
-            var conditions = {user_name: user.user_name};
-            var update = {$set: {unread: true}};
-            Users.update(conditions, update).exec();
-          }
-        });
-      }
-
-      // update user info
-      var conditions = {user_name: user_name};
-      var update = {$set: {following_no: json.length}};
-      Users.update(conditions, update).exec();
-    });
-  });
-  request.end();
-}
 
 function update_repos (user_name, accessToken, notify) {
   var options = {
@@ -473,37 +386,22 @@ exports.login = function(sess, accessToken, accessTokenExtra, ghUser) {
     usersByGhId[ghUser.id] = addUser('github', ghUser);
 
     Users
-    .findOne({ 'user_id': usersByGhId[ghUser.id].github.id },
-               'user_name', function (err, user) {
+    .findOne({ 'user_id': usersByGhId[ghUser.id].github.id }, function (err, user) {
       if (err) return handleError(err);
-      if (user != null) {
-        // update last_seen
-        var conditions = {user_name: usersByGhId[ghUser.id].github.login};
-        var update = {$set: {last_seen: Date.now()}};
-        Users.update(conditions, update, function (err, num) {
+
+      if (user) {
+        // User in db, update last_seen
+        var condit = {'user_name': user.user_name};
+        var update = {$set: {'last_seen': Date.now()}};
+        Users.update(condit, update, function () {
           console.log("* User " + user.user_name + " logged in.");
         });
+
         // get repos info
         update_repos(user.user_name, accessToken, true);
-        // update followers number and notify
-        module.exports.get_followers(user.user_name, accessToken, true);
-        // update following number and notify
-        module.exports.get_following(user.user_name, accessToken, true);
 
       } else {
-        // send welcome notification
-        new Notifications({
-          src:    null,
-          dest:   usersByGhId[ghUser.id].github.login,
-          type:   "welcome",
-          seen:   false,
-          date:   Date.now(),
-          link:   "/faq"
-        }).save(function(err, todo, count) {
-          if (err) console.log("[ERR] Notification not sent.");
-        });
-
-        // Import data from github
+        // User not in db, create one
         new Users ({
           user_id:       usersByGhId[ghUser.id].github.id,
           user_name:     usersByGhId[ghUser.id].github.login,
@@ -516,6 +414,17 @@ exports.login = function(sess, accessToken, accessTokenExtra, ghUser) {
           following_no:  usersByGhId[ghUser.id].github.following
         }).save (function (err, user, count) {
           console.log("* User " + user.user_name + " added.");
+
+          // send welcome notification
+          new Notifications({
+            src:    null,
+            dest:   usersByGhId[ghUser.id].github.login,
+            type:   "welcome",
+            link:   "/faq"
+          }).save(function(err, todo, count) {
+            if (err) console.log("[ERR] Notification not sent.");
+          });
+
           // get repos info
           get_repos(user.user_name, accessToken, false);
           // send welcome email

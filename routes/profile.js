@@ -10,26 +10,17 @@ User profile page. Shows all info about selected user.
 exports.index = function(req, res) {
   // Only logged in users can see profiles
   if (!req.session.auth) return res.redirect('/login')
-
-  var cname = req.url.substring(1, (req.url + '/').substring(1).indexOf('/')+1);
   var uid = ((req.session.auth) ? req.session.auth.github.user.id : null);
 
-  Users.findOne ({ 'user_name': cname }, function(err, cuser) {
-    if (!cuser) return res.status(404).render('404', {title: "404: File not found"})
-    else {
+  Users.findOne({ 'user_id': uid }, function(err, user) {
+    if (!user) return res.redirect('/login')
 
-      Users.findOne ({ 'user_id': uid }, function(err, user) {
-        if (!user) return res.redirect('/login')
+    res.render('profile', {
+      title:      'User',
+      currentUrl: '',
+      user: 		  user
+    });
 
-        res.render('profile', {
-          title:      cuser.user_fullname,
-          currentUrl: '',
-          cuser: 	    cuser,
-          user: 		  user
-        });
-
-      })
-    }
   })
 }
 

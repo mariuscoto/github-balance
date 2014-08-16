@@ -1,11 +1,12 @@
 !!! 5
-html
+html(ng-app)
   head
     title= title
     link(rel='shortcut icon', href='images/github-icon.ico')
     link(rel='stylesheet', href='/stylesheets/bootstrap.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
     script(type="text/javascript", src='http://code.jquery.com/jquery-1.8.1.js')
+    script(type="text/javascript", src='https://ajax.googleapis.com/ajax/libs/angularjs/1.0.1/angular.min.js')
 
   body
 
@@ -50,5 +51,6 @@ html
   - if (everyauth.loggedIn)
     script var username = "#{user.user_name}"; var cups = "#{user.points_repos}";
 
+  include ../public/javascripts/load_profile.js
   include ../public/javascripts/analytics.js
   include ../public/javascripts/social.html

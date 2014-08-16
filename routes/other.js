@@ -4,9 +4,7 @@ var Notifications = mongoose.model('Notifications');
 var core     = require('../core.js');
 
 /*
-Login with or without GitHub auth.
-This will provide a session and create a new user if necessary.
-Visit /login/$USER to login as $USER.
+Login page or profile page if already logged in.
 */
 exports.login = function(req, res) {
   if (req.session.auth)

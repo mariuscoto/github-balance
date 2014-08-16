@@ -6,7 +6,7 @@ global.config = [];
 app.configure('development', function(){
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
   global.config.redis_secret = 'big secret'
-  // global.config = require('./lib/config')
+  global.config = require('./lib/config')
   global.config.status = 'dev';
 });
 
@@ -55,6 +55,7 @@ everyauth
 .redirectPath('/login');
 
 
+app.configure('development', function () { app.locals.pretty = true; });
 app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
@@ -79,6 +80,11 @@ app.get('/login/:user', other.login_user);
 app.get('/faq', other.faq);
 app.get('/contact', other.contact);
 app.post('/contact', other.feedback);
+
+var api = require('./routes/api.js');
+app.get('/api/user/:user', api.user);
+app.get('/api/user/:user/followers', api.followers);
+app.get('/api/user/:user/following', api.following);
 
 var profile = require('./routes/profile.js');
 app.get('/:user/remove', ensureAuth, profile.remove);
