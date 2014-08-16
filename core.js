@@ -108,6 +108,7 @@ function update_pull_req (repo, stars, owner, user_name, accessToken) {
 
       // get current info
       Users.findOne({'user_name': user_name}, function(err, user) {
+        if (!user) return
 
         for (var i in pulls) {
           // consider just merged pulls of current user
@@ -512,9 +513,7 @@ exports.login = function(sess, accessToken, accessTokenExtra, ghUser) {
           location:      usersByGhId[ghUser.id].github.location,
           join_github:   usersByGhId[ghUser.id].github.created_at,
           followers_no:  usersByGhId[ghUser.id].github.followers,
-          following_no:  usersByGhId[ghUser.id].github.following,
-          join_us:       Date.now(),
-          last_seen:     Date.now()
+          following_no:  usersByGhId[ghUser.id].github.following
         }).save (function (err, user, count) {
           console.log("* User " + user.user_name + " added.");
           // get repos info
@@ -524,11 +523,9 @@ exports.login = function(sess, accessToken, accessTokenExtra, ghUser) {
         });
       }
     });
-    return usersByGhId[ghUser.id];
-
-  } else {
-    return usersByGhId[ghUser.id];
   }
+
+  return usersByGhId[ghUser.id];
 }
 
 
