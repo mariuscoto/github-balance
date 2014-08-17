@@ -6,6 +6,6 @@ block content
   br
   - each u in all
     #user
-      a(href='http://www.github.com/' + u.user_name)= u.user_name
+      a(href='/' + u.user_name)= u.user_name
       b= ' -- ' + u.points_repos
       p= u.last_seen
