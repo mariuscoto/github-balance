@@ -30,3 +30,30 @@ function user_controller($scope, $http) {
     $scope.following = data.no
   })
 }
+
+
+// Request repos info
+function repos_controller($scope, $http) {
+
+  $scope.repos = {}
+  $scope.cups = 0
+  $scope.tentacles = 0
+
+  $http.get('/api/user/' + user + '/repos').success(function(data) {
+
+    for (r in data) {
+      $scope.repos[data[r].name] = {}
+      $scope.repos[data[r].name]['name'] = data[r].name
+      $scope.repos[data[r].name]['fork'] = data[r].fork
+      $scope.repos[data[r].name]['html_url'] = data[r].html_url
+      $scope.repos[data[r].name]['description'] = data[r].description
+
+      $http.get('/api/repo/' + user + '/' + data[r].name).success(function(data) {
+        $scope.repos[data.name]['points'] = data.points
+        $scope.cups += data.points
+        if (data.pulls) $scope.tentacles += 1
+      })
+    }
+
+  })
+}

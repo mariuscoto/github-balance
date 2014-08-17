@@ -16,7 +16,6 @@ var Users = new Schema({
   repos:           {type: [Repo], default: []},
   unread:          {type: Boolean, default: false},
   points_repos:    {type: Number, default: 0},
-  tentacles:       {type: Number, default: 0}
 });
 
 var Repo = new Schema({
@@ -29,7 +28,8 @@ var Repo = new Schema({
   size:           Number,
   watchers_count: Number,
   owner:          {type: String, default: null},
-  closed_pulls:   {type: Number, default: 0}
+  closed_pulls:   {type: Number, default: 0},
+  stars:          {type: Number, default: 0}
 });
 
 var Notifications = new Schema({

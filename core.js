@@ -1,4 +1,4 @@
-var MACRO = require('./model/macro.js');
+var MACRO    = require('./model/macro.js');
 var mongoose = require('mongoose');
 var https = require('https');
 var fs = require('fs');
@@ -74,7 +74,7 @@ function addUser (source, sourceUser) {
   return user;
 }
 
-function update_repo_owner(repo, user_name, accessToken) {
+exports.update_repo_owner = function(repo, user_name, accessToken) {
   var options = {
     host: "api.github.com",
     path: "/repos/" + user_name + "/" + repo + "?access_token=" + accessToken,
@@ -87,13 +87,17 @@ function update_repo_owner(repo, user_name, accessToken) {
     response.on("data", function(chunk){ body+=chunk.toString("utf8"); });
     response.on("end", function(){
       var repo_info = JSON.parse(body);
+
       var repo_owner = repo_info.source.owner.login;
+      var repo_stars = repo_info.stargazers_count;
 
       // update element of array
       var conditions = {user_name: user_name, 'repos.name': repo};
-      var update = {$set: {'repos.$.owner': repo_owner}};
+      var update = {$set: {
+        'repos.$.owner': repo_owner,
+        'repos.$.stars': repo_stars }};
       Users.update(conditions, update, function (err, num) {
-        update_pull_req(repo, repo_owner, user_name, accessToken);
+        module.exports.update_pull_req(repo, repo_owner, user_name, accessToken);
       });
 
     });
@@ -101,7 +105,7 @@ function update_repo_owner(repo, user_name, accessToken) {
   request.end();
 }
 
-function update_pull_req (repo, stars, owner, user_name, accessToken) {
+exports.update_pull_req = function(repo, stars, owner, user_name, accessToken) {
   var options = {
     host: "api.github.com",
     path: "/repos/" + owner + "/" + repo + "/pulls?state=closed&&access_token=" + accessToken,
@@ -141,243 +145,28 @@ function update_pull_req (repo, stars, owner, user_name, accessToken) {
                 src:    repo,
                 dest:   user_name,
                 type:   "pull_accepted",
-                seen:   false,
-                date:   Date.now(),
-                link:   ""
               }).save(function(err, todo, count) {
                 if (err) console.log("[ERR] Notification not sent.");
               });
-            }
-
-            // first pull req, inc tentacles
-            if (user.repos[r].closed_pulls == 0 && count != 0) {
-              var conditions = {'user_name': user_name};
-              var update = {$inc: {'tentacles': 1}};
-              Users.update(conditions, update).exec();
             }
 
             break;
           }
         }
 
-        // update pulls count, inc tentacles, add points, update total
+        // update pulls count, add points, update total
         var pull_value = MACRO.USER.PULL + MACRO.USER.STAR * stars
         var conditions = {'user_name': user_name, 'repos.name': repo};
-        var update = {
-          $inc: {'points_repos': diff * pull_value},
-          $set: {'repos.$.points': count * pull_value,
-                 'repos.$.closed_pulls': count,}
-        };
-        Users.update(conditions, update).exec();
+        var update = {$set: {
+          'repos.$.points': count * pull_value,
+          'repos.$.closed_pulls': count}};
+        Users.update(conditions, update).exec()
       });
     });
   });
   request.end();
 }
 
-
-function update_repos (user_name, accessToken, notify) {
-  var options = {
-    host: "api.github.com",
-    path: "/users/" + user_name + "/repos?access_token=" + accessToken,
-    method: "GET",
-    headers: { "User-Agent": "github-connect" }
-  };
-
-  var request = https.request(options, function(response){
-    var body = '';
-    response.on("data", function(chunk){ body+=chunk.toString("utf8"); });
-    response.on("end", function(){
-      var json = JSON.parse(body);
-      var json_back = JSON.parse(body);
-      var repos_back = [];
-      var sum = 0; // sum of all new watcher, forks points
-
-      // get current info if available
-      Users.findOne({'user_name': user_name}, function(err, user) {
-        if (user) repos_back = user.repos.slice(0);
-
-        for (var k in json) {
-          var points = 0; // total points
-          if ({}.hasOwnProperty.call(json, k) && !json[k].private) {
-
-            for (var y in user.repos) {
-              if (json[k].name == user.repos[y].name) {
-                // remove processed repos from backup
-                json_back[k].name = '';
-                repos_back[y].name = null;
-
-                // check fork_count
-                var msg, diff = json[k].forks_count - user.repos[y].forks_count;
-                if (diff > 0) msg = "got " + diff + " new";
-                else if (diff < 0) msg = "lost " + -(diff);
-                sum += diff * MACRO.USER.FORK;
-                if (diff != 0) {
-                  new Notifications({
-                    src:    json[k].name,
-                    dest:   user.user_name,
-                    type:   "fork_count",
-                    seen:   false,
-                    date:   Date.now(),
-                    link:   msg
-                  }).save(function(err, todo, count) {
-                    if (err) console.log("[ERR] Notification not sent.");
-                  });
-                }
-
-                // check watchers_count
-                diff = json[k].watchers_count - user.repos[y].watchers_count;
-                if (diff > 0) msg = "got " + diff + " new";
-                else if (diff < 0) msg = "lost " + (-diff);
-                sum += diff * MACRO.USER.WATCH;
-                if (diff != 0) {
-                  new Notifications({
-                    src:    json[k].name,
-                    dest:   user.user_name,
-                    type:   "watch_count",
-                    seen:   false,
-                    date:   Date.now(),
-                    link:   msg
-                  }).save(function(err, todo, count) {
-                    if (err) console.log("[ERR] Notification not sent.");
-                  });
-                }
-
-                var points = 0;
-                // update existing repos + update pull req
-                if (json[k].fork) {
-                  update_pull_req(json[k].name, json[k].stargazers_count, user.repos[y].owner, user_name, accessToken);
-
-                // compute points for own repos
-                } else {
-                  points += MACRO.USER.REPO + MACRO.USER.FORK * json[k].forks_count;
-                  points += MACRO.USER.WATCH * json[k].watchers_count ;
-                }
-
-                // update info in db
-                var repo_name = json[k].name;
-                var conditions = {'user_name': user_name, 'repos.name': repo_name};
-                var update = { $set: {
-                  'repos.$.description':    json[k].description,
-                  'repos.$.forks_count':    json[k].forks_count,
-                  'repos.$.size':           json[k].size,
-                  'repos.$.watchers_count': json[k].watchers_count,
-                  'repos.$.points':         points
-                }};
-                Users.update(conditions, update).exec();
-
-                break;
-              }
-            }
-          }
-        }
-
-        // remove non processed repos and asociated points
-        for (var y in repos_back) {
-          if (repos_back[y].name != null) {
-            var conditions = {'user_name': user_name};
-            var update = { $pull: {repos: {'name': repos_back[y].name}},
-                           $inc:  {points_repos: -(repos_back[y].points)}};
-            Users.update(conditions, update).exec();
-          }
-        }
-
-        // add new repos from backup we created
-        var repos = [], total = 0;
-        for (var k in json_back) {
-            if (json_back[k].name != '') {
-              var points = 0; // total points
-              if ({}.hasOwnProperty.call(json_back, k) && !json_back[k].private) {
-
-                if (json_back[k].fork) { // get owner of forked repos and pull req
-                  update_repo_owner(json_back[k].name, user_name, accessToken);
-
-                } else { // compute points for own repos
-                  points += MACRO.USER.REPO + MACRO.USER.FORK * json_back[k].forks_count;
-                  points += MACRO.USER.WATCH * json_back[k].watchers_count ;
-                  total  += points;
-                }
-              }
-
-
-              repos.push(new Repo({
-                name:           json_back[k].name,
-                description:    json_back[k].description,
-                html_url:       json_back[k].html_url,
-                fork:           json_back[k].fork,
-                forks_count:    json_back[k].forks_count,
-                size:           json_back[k].size,
-                watchers_count: json_back[k].watchers_count,
-                points:         points,
-              }));
-            }
-        }
-
-        // update repos and score + sum of new notifications
-        var conditions = {user_name: user_name};
-        var update = {
-          $pushAll: {repos: repos},
-          $inc: {points_repos: total + sum}
-        };
-        Users.update(conditions, update).exec();
-      });
-    });
-  });
-  request.end();
-}
-
-function get_repos (user_name, accessToken, notify) {
-  var options = {
-    host: "api.github.com",
-    path: "/users/" + user_name + "/repos?access_token=" + accessToken,
-    method: "GET",
-    headers: { "User-Agent": "github-connect" }
-  };
-
-  var request = https.request(options, function(response){
-    var body = '';
-    response.on("data", function(chunk){ body+=chunk.toString("utf8"); });
-    response.on("end", function(){
-      var json = JSON.parse(body);
-      var repos = [], total = 0;
-
-      for (var k in json) {
-        var points = 0; // total points
-        if ({}.hasOwnProperty.call(json, k) && !json[k].private) {
-
-          if (json[k].fork) { // get owner of forked repos and pull req
-            update_repo_owner(json[k].name, user_name, accessToken);
-
-          } else { // compute points for own repos
-            points += MACRO.USER.REPO + MACRO.USER.FORK * json[k].forks_count;
-            points += MACRO.USER.WATCH * json[k].watchers_count ;
-            total  += points;
-          }
-        }
-
-        repos.push(new Repo({
-          name:           json[k].name,
-          description:    json[k].description,
-          html_url:       json[k].html_url,
-          fork:           json[k].fork,
-          forks_count:    json[k].forks_count,
-          size:           json[k].size,
-          watchers_count: json[k].watchers_count,
-          points:         points,
-          owner:          null
-        }));
-      }
-
-      // update repos and score
-      var conditions = {user_name: user_name};
-      var update = {$set: {repos: repos, points_repos: total}};
-      Users.update(conditions, update, function (err, num) {
-        console.log("* Updated repos for " + user_name);
-      });
-    });
-  });
-  request.end();
-}
 
 exports.login = function(sess, accessToken, accessTokenExtra, ghUser) {
   sess.oauth = accessToken;
@@ -396,9 +185,6 @@ exports.login = function(sess, accessToken, accessTokenExtra, ghUser) {
         Users.update(condit, update, function () {
           console.log("* User " + user.user_name + " logged in.");
         });
-
-        // get repos info
-        update_repos(user.user_name, accessToken, true);
 
       } else {
         // User not in db, create one
@@ -425,8 +211,6 @@ exports.login = function(sess, accessToken, accessTokenExtra, ghUser) {
             if (err) console.log("[ERR] Notification not sent.");
           });
 
-          // get repos info
-          get_repos(user.user_name, accessToken, false);
           // send welcome email
           module.exports.send_mail(user.user_email, 'welcome');
         });

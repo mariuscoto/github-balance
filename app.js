@@ -83,8 +83,10 @@ app.post('/contact', other.feedback);
 
 var api = require('./routes/api.js');
 app.get('/api/user/:user', api.user);
+app.get('/api/user/:user/repos', api.repos);
 app.get('/api/user/:user/followers', api.followers);
 app.get('/api/user/:user/following', api.following);
+app.get('/api/repo/:user/:repo', api.logs);
 
 var profile = require('./routes/profile.js');
 app.get('/:user/remove', ensureAuth, profile.remove);

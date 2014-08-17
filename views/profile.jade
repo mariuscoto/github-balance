@@ -41,29 +41,21 @@ block content
     .profile-right
       - if (currentUrl == '')
         .profile-points
-          //.ideas-desc-top-square= cuser.tentacles
-            //h5 tentacles
-          //h1= cuser.points_repos + " cups "
+          .ideas-desc-top-square {{ tentacles }}
+            h5 tentacles
+          h1 {{ cups }} cups
 
         .spacer
       - if (currentUrl == '')
         .profile-list
           .profile-header All public repositories
-          - if (!cuser)
-            .profile-item No personal repos.
-          - else
-            - each repo in cuser.repos
-              .profile-item
-                - if (repo.fork)
-                  .profile-repo-icon-forked
-                - else
-                  .profile-repo-icon
-                .profile-repo-name
-                  a(href=repo.html_url)= repo.name
-                - if (repo.points != 0)
-                  .profile-repo-points= "+" + repo.points
-                .profile-repo-desc
-                  = repo.description
+          .profile-item(ng-repeat="r in repos")
+            .profile-repo-icon-forked(ng-show='r.fork')
+            .profile-repo-icon(ng-show='!r.fork')
+            .profile-repo-name
+              a(href='{{ r.html_url }}') {{ r.name }}
+            .profile-repo-points(ng-show='r.points') {{ r.points }}
+            .profile-repo-desc {{ r.description }}
 
       - if (currentUrl == 'notifications')
         .profile-notif
