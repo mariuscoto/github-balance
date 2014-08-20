@@ -1,6 +1,11 @@
 # Github-balance
 
-Is the app that quantifies your contributions to the open-source world.
+The app that quantifies your Open Source contributions.
+
+Just log in with your GitHub account to see your score. The score is based on your repositories popularity, and on your contributions at other projects. Stars, watchers or forks bring you more points.
+
+Share your score on facebook or twitter and see how you compete against your friends.
+
 
 ## Setup
 
