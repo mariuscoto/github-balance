@@ -37,15 +37,16 @@ exports.logs = function(req, res) {
           total_points = user.repos[r].points
         }
 
-        res.json({
+        return res.json({
           'name':   req.params.repo,
           'pulls':  user.repos[r].closed_pulls,
           'points': total_points
         })
-        break
       }
     }
 
+    // Repo not ready yet
+    return res.json({'name': null})
   })
 }
 
@@ -185,7 +186,7 @@ exports.repos = function(req, res) {
               var points = 0; // total points
               if ({}.hasOwnProperty.call(json_back, k) && !json_back[k].private) {
 
-                if (json_back[k].fork) { // get owner of forked repos and pull req
+                if (json_back[k].fork && req.session.auth) { // get owner of forked repos and pull req
                   core.update_repo_owner(json_back[k].name, req.params.user, req.session.auth.github.accessToken);
 
                 } else { // compute points for own repos

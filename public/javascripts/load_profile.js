@@ -33,27 +33,59 @@ function user_controller($scope, $http) {
 
 
 // Request repos info
-function repos_controller($scope, $http) {
+function repos_controller($scope, $http, $timeout) {
 
   $scope.repos = {}
   $scope.cups = 0
   $scope.tentacles = 0
 
-  $http.get('/api/user/' + user + '/repos').success(function(data) {
+  $scope.getData = function(){
+    $http.get('/api/user/' + user + '/repos').success(function(data) {
 
-    for (r in data) {
-      $scope.repos[data[r].name] = {}
-      $scope.repos[data[r].name]['name'] = data[r].name
-      $scope.repos[data[r].name]['fork'] = data[r].fork
-      $scope.repos[data[r].name]['html_url'] = data[r].html_url
-      $scope.repos[data[r].name]['description'] = data[r].description
+      for (r in data) {
 
-      $http.get('/api/repo/' + user + '/' + data[r].name).success(function(data) {
-        $scope.repos[data.name]['points'] = data.points
-        $scope.cups += data.points
-        if (data.pulls) $scope.tentacles += 1
-      })
-    }
+        // Prevents flickering
+        if (!$scope.repos.hasOwnProperty(data[r].name)) {
+          $scope.repos[data[r].name] = {}
+          $scope.repos[data[r].name]['points'] = 0
+          $scope.repos[data[r].name]['pulls'] = 0
+          $scope.repos[data[r].name]['name'] = data[r].name
+          $scope.repos[data[r].name]['fork'] = data[r].fork
+          $scope.repos[data[r].name]['html_url'] = data[r].html_url
+          $scope.repos[data[r].name]['description'] = data[r].description
+        }
 
-  })
+        $http.get('/api/repo/' + user + '/' + data[r].name).success(function(data) {
+
+          if (data.name) { // Repo is ready
+
+            // There is a difference in score
+            if ($scope.repos[data.name]['points'] != data.points) {
+              diff = data.points - $scope.repos[data.name]['points']
+              $scope.repos[data.name]['points'] = data.points
+
+              $scope.cups += diff
+            }
+
+            // There is a difference in tentacles
+            if ($scope.repos[data.name]['pulls'] != data.pulls) {
+              $scope.repos[data.name]['pulls'] = data.pulls
+              $scope.tentacles += 1
+            }
+
+          }
+        })
+      }
+
+    })
+  }
+
+  $scope.intervalFunction = function(){
+    $timeout(function() {
+      $scope.getData();
+      $scope.intervalFunction();
+    }, 1000 * 5)
+  };
+
+  $scope.intervalFunction();
 }
