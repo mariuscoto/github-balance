@@ -23,14 +23,6 @@ function user_controller($scope, $http) {
     $scope.followers = data.followers_no
     $scope.following = data.following_no
   })
-
-  $http.get('/api/user/' + user + '/followers').success(function(data) {
-    $scope.followers = data.no
-  })
-
-  $http.get('/api/user/' + user + '/following').success(function(data) {
-    $scope.following = data.no
-  })
 }
 
 

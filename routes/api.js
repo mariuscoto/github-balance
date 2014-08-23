@@ -114,9 +114,9 @@ exports.repos = function(req, res) {
 
                   } else {
                     // Check fork_count
-                    core.check_count(json[k].forks_count, user.repos[y].forks_count, 'fork_count')
+                    core.check_count(json[k].forks_count, user.repos[y].forks_count, 'fork_count', json[k].name, user.user_name)
                     // Check watchers_count
-                    core.check_count(json[k].watchers_count, user.repos[y].watchers_count, 'watch_count')
+                    core.check_count(json[k].watchers_count, user.repos[y].watchers_count, 'watch_count', json[k].name, user.user_name)
 
                     points += MACRO.USER.REPO + MACRO.USER.FORK * json[k].forks_count;
                     points += MACRO.USER.WATCH * json[k].watchers_count ;
@@ -227,31 +227,6 @@ exports.followers = function(req, res) {
       // Provide response
       res.json({no: json.length});
 
-      // Compare with old value and notify if changes occur
-      Users.findOne({'user_name': req.params.user}, function(err, user) {
-        if (!user) return
-
-        var msg, diff = user.followers_no - json.length;
-        if (diff > 0) msg = "lost " + diff;
-        else if (diff < 0) msg = -(diff) + " new";
-
-        // Notify user only if we have some action going on
-        if (diff != 0) {
-          new Notifications({
-            src:    "",
-            dest:   user.user_name,
-            type:   "followers_no",
-            link:   msg
-          }).save(function(err, todo, count ) {
-            if (err) console.log("[ERR] Notification not sent.");
-          });
-
-          var conditions = {'user_name': user.user_name};
-          var update = {$set: {'unread': true}};
-          Users.update(conditions, update).exec();
-        }
-      });
-
       // Update user info
       var conditions = {'user_name': req.params.user};
       var update = {$set: {'followers_no': json.length}};
@@ -285,30 +260,6 @@ exports.following = function (req, res) {
 
       // Provide response
       res.json({no: json.length});
-
-      Users.findOne({'user_name': req.params.user}, function(err, user) {
-        if (!user) return
-
-        var msg, diff = user.following_no - json.length;
-        if (diff > 0) msg = "lost " + diff;
-        else if (diff < 0) msg = -(diff) + " new";
-
-        // Notify user only if we have some action going on
-        if (diff != 0) {
-          new Notifications({
-            src:    "",
-            dest:   user.user_name,
-            type:   "following_no",
-            link:   msg
-          }).save(function(err, todo, count ) {
-            if (err) console.log("[ERR] Notification not sent.");
-          });
-
-          var conditions = {'user_name': user.user_name};
-          var update = {$set: {'unread': true}};
-          Users.update(conditions, update).exec();
-        }
-      });
 
       // Update user info
       var conditions = {'user_name': req.params.user};

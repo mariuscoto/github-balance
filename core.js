@@ -181,10 +181,18 @@ exports.login = function(sess, accessToken, accessTokenExtra, ghUser) {
       if (user) {
         // User in db, update last_seen
         var condit = {'user_name': user.user_name};
-        var update = {$set: {'last_seen': Date.now()}};
+        var update = {$set: {
+          'last_seen':    Date.now(),
+          'followers_no': usersByGhId[ghUser.id].github.followers,
+          'following_no': usersByGhId[ghUser.id].github.following
+        }};
         Users.update(condit, update, function () {
           console.log("* User " + user.user_name + " logged in.");
         });
+
+        // Check for changes in following/followers number
+        module.exports.check_count(usersByGhId[ghUser.id].github.following, user.following_no, "following_no", "", user.user_name)
+        module.exports.check_count(usersByGhId[ghUser.id].github.followers, user.followers_no, "followers_no", "", user.user_name)
 
       } else {
         // User not in db, create one
@@ -254,19 +262,23 @@ exports.get_time_from = function (then) {
   Compare two values and fire notification if they differ. Used to alert the
   changes in numer of repo watcher, forks, etc.
 */
-exports.check_count = function(new_value, old_value, type) {
+exports.check_count = function(new_value, old_value, type, src, dest) {
   diff = new_value - old_value
   if (diff > 0) msg = "got " + diff + " new";
   else if (diff < 0) msg = "lost " + (-diff);
 
   if (diff != 0) {
     new Notifications({
-      src:    json[k].name,
-      dest:   user.user_name,
-      type:   type,
-      link:   msg
+      'src':    src,
+      'dest':   dest,
+      'type':   type,
+      'link':   msg
     }).save(function(err, todo, count) {
       if (err) console.log("[ERR] Notification not sent.");
     });
   }
+
+  var conditions = {'user_name': dest};
+  var update = {$set: {'unread': true}};
+  Users.update(conditions, update).exec();
 }
