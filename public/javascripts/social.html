@@ -19,11 +19,11 @@
 
 <script>
 var globalFacebookShareObject = {}
-function shareOnFacebook(){
+function shareOnFacebook(name, cups){
     FB.ui({
         method: 'feed',
         name: 'I have ' + cups + ' cups.',
-        link: 'http://github-balance.herokuapp.com/' + username,
+        link: 'http://github-balance.herokuapp.com/' + name,
         caption: 'This is the value of my contributions to the open-source world.',
         picture: 'http://github-balance.herokuapp.com/images/gc-logo.png',
         description: 'Github-balance is an app that quantifies your contributions to the open-source world.'

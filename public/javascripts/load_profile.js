@@ -1,6 +1,8 @@
 //Get current user from URL
 var user = window.location.pathname.split('/')[1]
 
+if (typeof user === 'undefined') exit(0)
+
 // Request user info
 function user_controller($scope, $http) {
 
@@ -41,7 +43,6 @@ function repos_controller($scope, $http, $timeout) {
 
   $scope.getData = function(){
     $http.get('/api/user/' + user + '/repos').success(function(data) {
-
       for (r in data) {
 
         // Prevents flickering

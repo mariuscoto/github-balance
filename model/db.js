@@ -13,9 +13,9 @@ var Users = new Schema({
   join_github:     {type: String, default: Date.now},
   join_us:         {type: Date, default: Date.now},
   last_seen:       {type: Date, default: Date.now},
+  refresh:         {type: Date, default: null},
   repos:           {type: [Repo], default: []},
-  unread:          {type: Boolean, default: false},
-  points_repos:    {type: Number, default: 0},
+  unread:          {type: Boolean, default: false}
 });
 
 var Repo = new Schema({
@@ -47,7 +47,7 @@ mongoose.model( 'Repo', Repo );
 mongoose.model( 'Notifications', Notifications );
 
 
-if (global.config.status == 'dev')
+if (global.config.status == 'dev2')
   mongoose.connect( 'mongodb://localhost/github-balance' );
 else
   mongoose.connect('mongodb://'+global.config.db_name+':'+global.config.db_pass+'@kahana.mongohq.com:10039/github-balance');

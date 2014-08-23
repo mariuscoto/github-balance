@@ -6,4 +6,6 @@ exports.USER = {
   WATCH:  1
 }
 
+exports.REFRESH_TIMEOUT = 1 * 60 * 1000 //milisecs
+
 exports.SUPERUSER = ['mariuscoto']

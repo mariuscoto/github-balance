@@ -97,7 +97,7 @@ exports.update_repo_owner = function(repo, user_name, accessToken) {
         'repos.$.owner': repo_owner,
         'repos.$.stars': repo_stars }};
       Users.update(conditions, update, function (err, num) {
-        module.exports.update_pull_req(repo, repo_owner, user_name, accessToken);
+        module.exports.update_pull_req(repo, repo_stars, repo_owner, user_name, accessToken);
       });
 
     });
@@ -246,5 +246,27 @@ exports.get_time_from = function (then) {
     } else {
       return "one minute ago";
     }
+  }
+}
+
+
+/*
+  Compare two values and fire notification if they differ. Used to alert the
+  changes in numer of repo watcher, forks, etc.
+*/
+exports.check_count = function(new_value, old_value, type) {
+  diff = new_value - old_value
+  if (diff > 0) msg = "got " + diff + " new";
+  else if (diff < 0) msg = "lost " + (-diff);
+
+  if (diff != 0) {
+    new Notifications({
+      src:    json[k].name,
+      dest:   user.user_name,
+      type:   type,
+      link:   msg
+    }).save(function(err, todo, count) {
+      if (err) console.log("[ERR] Notification not sent.");
+    });
   }
 }
