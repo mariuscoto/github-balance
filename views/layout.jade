@@ -12,6 +12,10 @@ html(ng-app)
 
     #container(ng-controller='repos_controller')
       #header
+
+        a(href="/")
+          #logo
+
         #nav
         #controls
           - if (everyauth.loggedIn)
