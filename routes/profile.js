@@ -1,3 +1,4 @@
+var MACRO    = require('../model/macro.js');
 var mongoose = require('mongoose');
 var Users    = mongoose.model('Users');
 var Notifications   = mongoose.model('Notifications');
@@ -8,9 +9,14 @@ var core 		= require('../core.js');
 User profile page. Shows all info about selected user.
 */
 exports.index = function(req, res) {
-  var uid = ((req.session.auth) ? req.session.auth.github.user.id : null);
+  var cname = req.url.substring(1, (req.url + '/').substring(1).indexOf('/')+1);
+  var uname = ((req.session.auth) ? req.session.auth.github.user.login : null);
 
-  Users.findOne({ 'user_id': uid }, function(err, user) {
+  // Only superuser can see other people's profiles.
+  if (uname && uname != cname && uname != MACRO.SUPERUSER)
+    return res.redirect('/' + uname)
+
+  Users.findOne({ 'user_name': uname }, function(err, user) {
     if (!user) return res.redirect('/login')
 
     res.render('profile', {
@@ -26,9 +32,10 @@ exports.index = function(req, res) {
 Notifications tab.
 */
 exports.notifications = function(req, res) {
-  var uid = ((req.session.auth) ? req.session.auth.github.user.id : null);
+  var uname = ((req.session.auth) ? req.session.auth.github.user.login : null);
 
-  Users.findOne ({ 'user_id': uid }, function(err, user) {
+  Users.findOne ({ 'user_name': uname }, function(err, user) {
+    if (!user) return res.redirect('/login')
 
     Notifications
     .find({ 'dest': user.user_name })
