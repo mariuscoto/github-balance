@@ -264,10 +264,12 @@ exports.get_time_from = function (then) {
 */
 exports.check_count = function(new_value, old_value, type, src, dest) {
   diff = new_value - old_value
+
+  var msg = null
   if (diff > 0) msg = "got " + diff + " new";
   else if (diff < 0) msg = "lost " + (-diff);
 
-  if (diff != 0) {
+  if (diff != 0 && msg) {
     new Notifications({
       'src':    src,
       'dest':   dest,

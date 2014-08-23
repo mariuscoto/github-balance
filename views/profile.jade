@@ -30,7 +30,7 @@ block content
           - if (user.user_name)
             a(href='/' + user.user_name + '/notifications') Notifications
             br
-            a(href='#', onclick='shareOnFacebook({{ user_name }}, {{ cups }})') Share on Facebook
+            a(href='#', onclick='shareOnFacebook("{{ user_name }}", "{{ cups }}")') Share on Facebook
             br
             a(href="https://twitter.com/share?text=I have {{ cups }} cups", data-lang="en") Share on Twitter
             br
