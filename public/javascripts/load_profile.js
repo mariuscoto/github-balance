@@ -1,7 +1,8 @@
 //Get current user from URL
 var user = window.location.pathname.split('/')[1]
 
-if (typeof user === 'undefined') exit(0)
+if (typeof user === 'undefined' || user == 'faq' || user == 'contact' || user == '')
+  exit(0)
 
 
 // Request user info
@@ -86,7 +87,10 @@ function repos_controller($scope, $http, $timeout) {
     $timeout(function() {
 
       // Remove loader when we get consistent points
-      if ($scope.cups == $scope.backup) $scope.loading = false
+      if ($scope.cups == $scope.backup) {
+        $scope.loading = false
+        break
+      }
 
       $scope.getData();
       $scope.intervalFunction();
