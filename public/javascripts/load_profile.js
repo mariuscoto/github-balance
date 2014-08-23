@@ -33,6 +33,9 @@ function repos_controller($scope, $http, $timeout) {
   $scope.cups = 0
   $scope.tentacles = 0
 
+  $scope.loading = true
+  $scope.backup = 42
+
   $scope.getData = function(){
     $http.get('/api/user/' + user + '/repos').success(function(data) {
       for (r in data) {
@@ -68,6 +71,9 @@ function repos_controller($scope, $http, $timeout) {
 
           }
         })
+
+        // Update backup points
+        $scope.backup = $scope.cups
       }
 
     })
@@ -75,6 +81,11 @@ function repos_controller($scope, $http, $timeout) {
 
   $scope.intervalFunction = function(){
     $timeout(function() {
+
+      // Remove loader when we get consistent points
+      console.log($scope.cups + " " + $scope.backup)
+      if ($scope.cups == $scope.backup) $scope.loading = false
+
       $scope.getData();
       $scope.intervalFunction();
     }, 1000 * 5)

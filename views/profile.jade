@@ -48,7 +48,9 @@ block content
         .spacer
       - if (currentUrl == '')
         .profile-list
-          .profile-header All public repositories
+          .profile-header
+            .profile-loader(ng-show='loading')
+            | All public repositories
           .profile-item(ng-repeat="r in repos")
             .profile-repo-icon-forked(ng-show='r.fork')
             .profile-repo-icon(ng-show='!r.fork')
@@ -56,6 +58,8 @@ block content
               a(href='{{ r.html_url }}') {{ r.name }}
             .profile-repo-points(ng-show='r.points') {{ r.points }}
             .profile-repo-desc {{ r.description }}
+          .profile-item(ng-show='loading')
+            | Fetching data...
 
       - if (currentUrl == 'notifications')
         .profile-notif
