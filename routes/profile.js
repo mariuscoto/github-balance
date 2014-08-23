@@ -8,8 +8,6 @@ var core 		= require('../core.js');
 User profile page. Shows all info about selected user.
 */
 exports.index = function(req, res) {
-  // Only logged in users can see profiles
-  if (!req.session.auth) return res.redirect('/login')
   var uid = ((req.session.auth) ? req.session.auth.github.user.id : null);
 
   Users.findOne({ 'user_id': uid }, function(err, user) {
@@ -20,9 +18,9 @@ exports.index = function(req, res) {
       currentUrl: '',
       user: 		  user
     });
-
   })
 }
+
 
 /*
 Notifications tab.
@@ -30,44 +28,31 @@ Notifications tab.
 exports.notifications = function(req, res) {
   var uid = ((req.session.auth) ? req.session.auth.github.user.id : null);
 
-  Users.findOne ({ 'user_name': req.params.user }, function(err, cuser) {
-    if (!cuser) return res.render('404', {title: "404: File not found"});
-    else {
+  Users.findOne ({ 'user_id': uid }, function(err, user) {
 
-      Users.findOne ({ 'user_id': uid }, function(err, user) {
+    Notifications
+    .find({ 'dest': user.user_name })
+    .sort({ 'date' : -1 })
+    .exec(function(err, notif) {
 
-        // Users must only see their own notifications
-        if (!user || user.user_name != cuser.user_name) {
-          return res.redirect('/' + cuser.user_name);
+      for (var i in notif) {
+        // Format date
+        notif[i].date_f = core.get_time_from(notif[i].date);
+      }
 
-        } else {
-          // Update general unread
-          var conditions = {user_name: cuser.user_name};
-          var update = {$set: {unread: false}};
-          Users.update(conditions, update).exec();
-
-          Notifications
-          .find({ 'dest': cuser.user_name })
-          .sort({ 'date' : -1 })
-          .exec(function(err, notif) {
-
-            for (var i in notif) {
-              // Format date
-              notif[i].date_f = core.get_time_from(notif[i].date);
-            }
-
-            res.render('profile', {
-              'title':      cuser.user_fullname,
-              'currentUrl': 'notifications',
-              'cuser':      cuser,
-              'notif':      notif,
-              'user':       user
-            })
-
-          })
-        }
+      res.render('profile', {
+        'title':      user.user_fullname,
+        'currentUrl': 'notifications',
+        'notif':      notif,
+        'user':       user
       })
-    }
+    })
+
+    // Update general unread
+    var conditions = {'user_name': user.user_name};
+    var update = {$set: {'unread': false}};
+    Users.update(conditions, update).exec();
+
   })
 }
 

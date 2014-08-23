@@ -89,7 +89,7 @@ app.get('/api/repo/:user/:repo', api.logs);
 
 var profile = require('./routes/profile.js');
 app.get('/:user/remove', ensureAuth, profile.remove);
-app.get('/:user/notifications', profile.notifications);
+app.get('/:user/notifications', ensureAuth, profile.notifications);
 
 var admin = require('./routes/admin.js');
 app.get('/admin', ensureSuper, admin.index);

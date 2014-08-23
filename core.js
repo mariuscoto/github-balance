@@ -276,9 +276,9 @@ exports.check_count = function(new_value, old_value, type, src, dest) {
     }).save(function(err, todo, count) {
       if (err) console.log("[ERR] Notification not sent.");
     });
-  }
 
-  var conditions = {'user_name': dest};
-  var update = {$set: {'unread': true}};
-  Users.update(conditions, update).exec();
+    var conditions = {'user_name': dest};
+    var update = {$set: {'unread': true}};
+    Users.update(conditions, update).exec();
+  }
 }
