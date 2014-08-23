@@ -3,9 +3,9 @@ var user = window.location.pathname.split('/')[1]
 
 if (typeof user === 'undefined') exit(0)
 
+
 // Request user info
 function user_controller($scope, $http) {
-
   $http.get('/api/user/' + user).success(function(data) {
     if (data.err) return console.log(data.msg)
 
@@ -28,7 +28,6 @@ function user_controller($scope, $http) {
 
 // Request repos info
 function repos_controller($scope, $http, $timeout) {
-
   $scope.repos = {}
   $scope.cups = 0
   $scope.tentacles = 0
@@ -54,6 +53,10 @@ function repos_controller($scope, $http, $timeout) {
         $http.get('/api/repo/' + user + '/' + data[r].name).success(function(data) {
 
           if (data.name) { // Repo is ready
+
+            $scope.repos[data.name]['watchers'] = data.watchers
+            $scope.repos[data.name]['forks'] = data.forks
+            $scope.repos[data.name]['stars'] = data.stars
 
             // There is a difference in score
             if ($scope.repos[data.name]['points'] != data.points) {
@@ -83,7 +86,6 @@ function repos_controller($scope, $http, $timeout) {
     $timeout(function() {
 
       // Remove loader when we get consistent points
-      console.log($scope.cups + " " + $scope.backup)
       if ($scope.cups == $scope.backup) $scope.loading = false
 
       $scope.getData();

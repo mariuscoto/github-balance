@@ -51,15 +51,27 @@ block content
           .profile-header
             .profile-loader(ng-show='loading')
             | All public repositories
-          .profile-item(ng-repeat="r in repos")
+          .profile-item(ng-repeat="r in repos", ng-click="showLogs = !showLogs")
             .profile-repo-icon-forked(ng-show='r.fork')
             .profile-repo-icon(ng-show='!r.fork')
             .profile-repo-name
               a(href='{{ r.html_url }}') {{ r.name }}
             .profile-repo-points(ng-show='r.points') {{ r.points }}
             .profile-repo-desc {{ r.description }}
+            .profile-repo-logs(ng-show="showLogs")
+              .profile-log(ng-show='r.fork&&r.pulls') +{{ r.points }}
+                | for your merged pull requests in a {{ r.stars }} star repo
+
+              .profile-log(ng-show='!r.fork') +20 cups for this personal project
+              .profile-log(ng-show='!r.fork&&r.forks') +{{ r.forks }}
+                | cups for the forks this repo has
+              .profile-log(ng-show='!r.fork&&r.watchers') +{{ r.watchers }}
+                | cups for the people watching the repo
+
           .profile-item(ng-show='loading')
             | Fetching data...
+          .profile-footer(ng-show='!loading')
+            | *Click a repo to see more details.
 
       - if (currentUrl == 'notifications')
         .profile-notif

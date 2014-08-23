@@ -38,9 +38,12 @@ exports.logs = function(req, res) {
         }
 
         return res.json({
-          'name':   req.params.repo,
-          'pulls':  user.repos[r].closed_pulls,
-          'points': total_points
+          'name':     req.params.repo,
+          'stars':    user.repos[r].stars,
+          'pulls':    user.repos[r].closed_pulls,
+          'points':   total_points,
+          'watchers': user.repos[r].watchers_count * MACRO.USER.WATCH,
+          'forks':    user.repos[r].forks_count * MACRO.USER.FORK
         })
       }
     }

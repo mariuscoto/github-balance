@@ -895,6 +895,11 @@ a:hover {
     text-overflow: ellipsis;
 }
 
+.profile-log {
+    margin-left: 80px;
+    font-weight: bold;
+}
+
 .profile-repo-points {
     width: 30px;
     height: 25px;
