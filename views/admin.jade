@@ -1,11 +1,20 @@
 extends layout
 
 block content
-
-  h1= 'Users (' + all.length + ')'
-  br
-  - each u in all
-    #user
-      a(href='/' + u.user_name)= u.user_name
-      b= ' -- ' + u.points_repos
-      p= u.last_seen
+  #container
+    #header
+      a(href="/")
+        #logo
+      #nav
+      #controls
+        - if (!everyauth.loggedIn)
+          a(href="/auth/github") Login
+            
+    #body
+      #content
+        h1= 'Users (' + all.length + ')'
+        br
+        - each u in all
+          #user
+            a(href='/' + u.user_name)= u.user_name
+            p= u.last_seen

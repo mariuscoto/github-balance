@@ -84,14 +84,11 @@ function repos_controller($scope, $http, $timeout) {
     $timeout(function() {
 
       // Remove loader when we get consistent points
-      if ($scope.cups == $scope.backup) {
-        $scope.loading = false
-        break
-      }
+      if ($scope.cups == $scope.backup) $scope.loading = false
 
       $scope.getData();
       $scope.intervalFunction();
-    }, 1000 * 5)
+    }, 1000 * 10)
   };
 
   $scope.intervalFunction();
