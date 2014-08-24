@@ -56,7 +56,6 @@ exports.logs = function(req, res) {
 
 // Get repos info
 exports.repos = function(req, res) {
-
   // Use access token if user is logged in
   var url = "/users/" + req.params.user + "/repos"
   if (req.session.auth)
