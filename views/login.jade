@@ -1,47 +1,58 @@
 extends layout
 
 block content
-  h1 GitHub Balance
+  #container
+    #header
+      a(href="/")
+        #logo
+      #nav
+      #controls
+        - if (!everyauth.loggedIn)
+          a(href="/auth/github") Login
 
-  br
-  h3 Is the app that quantifies your contributions to the open-source world.
-    | It awards points for your personal repositories and pull requests for
-    | other people's projects.
+    #body
+      #content
+        h1 GitHub Balance
 
-  br
-  - if (!everyauth.loggedIn)
-    - if (status != 'test')
-      h3
-        a(href='/auth/github') Log in
-        = ' with just your GitHub account.'
-    - else
-      h3 Login is disabled for the moment.
+        br
+        h4 Is the app that quantifies your contributions to the open-source world.
+          | It awards points for your personal repositories and pull requests for
+          | other people's projects.
+
+        br
+        - if (!everyauth.loggedIn)
+          - if (status != 'test')
+            h3
+              a(href='/auth/github') Log in
+              = ' with your GitHub account.'
+          - else
+            h3 Login is disabled for the moment.
 
 
-  .spacer
-  #balance-promo
-    #balance-item
-      img(src='/images/index_plus.png')
-      p See how valuable your contributions are.
-    #balance-item
-      img(src='/images/index_competition.png')
-      p Compare your score to others.
-    #balance-item
-      img(src='/images/index_notif.png')
-      p Get notified about things that matter to you.
+        .spacer
+        #balance-promo
+          #balance-item
+            img(src='/images/index_plus.png')
+            p See how valuable your contributions are.
+          #balance-item
+            img(src='/images/index_competition.png')
+            p Compare your score to others.
+          #balance-item
+            img(src='/images/index_notif.png')
+            p Get notified about things that matter to you.
 
-  .spacer
-  .card.css3-shadow
-    p= 'Get in touch with us, using the '
-      a(href='https://www.facebook.com/GitHubBalance') Facebook Page
-      = ' or our '
-      a(href='/contact') feedback
-      = ' form.'
+        .spacer
+        .card.css3-shadow
+          p= 'Get in touch with us, using the '
+            a(href='https://www.facebook.com/GitHubBalance') Facebook Page
+            = ' or our '
+            a(href='/contact') feedback
+            = ' form.'
 
-  .spacer
-  #github-promo
-    = 'We use data that is publicly available on '
-    a(href='http://github.com') GitHub,
-    br
-    = 'provided through their '
-    a(href='https://developer.github.com/v3/') API.
+        .spacer
+        #github-promo
+          = 'We use data that is publicly available on '
+          a(href='http://github.com') GitHub,
+          br
+          = 'provided through their '
+          a(href='https://developer.github.com/v3/') API.

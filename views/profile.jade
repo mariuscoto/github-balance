@@ -1,108 +1,126 @@
 extends layout
 
 block content
-  #menu
-
-  #content
-    .profile-left(ng-controller='user_controller')
-      .profile-avatar
-        img(ng-src="{{ avatar_src }}")
-
-      .profile-name
-        b {{ fullname }}
-        br
-        a(href='http://www.github.com/{{ user_name }}') {{ user_name }}
-
-      .profile-info.profile-info-location(ng-show='location') {{ location }}
-      .profile-info.profile-info-email(ng-show='email') {{ email }}
-      .profile-info.profile-info-date(ng-show='join_date') Last seen on {{ join_date }}
-
-      .profile-numbers
-        .profile-num
-          p {{ followers }}
-          h5 followers
-        .profile-num
-          p {{ following }}
-          h5 following
-
-      .profile-links
+  #container(ng-controller='repos_controller')
+    #header
+      a(href="/")
+        #logo
+      #nav
+      #controls
         - if (everyauth.loggedIn)
-          - if (user.user_name)
-            a(href='/' + user.user_name + '/notifications') Notifications
-            br
-            a(href='#', onclick='shareOnFacebook("{{ user_name }}", "{{ cups }}")') Share on Facebook
-            br
-            a(href="https://twitter.com/share?text=I have {{ cups }} cups", data-lang="en") Share on Twitter
-            br
-            a(href='/{{ user_name }}/remove') Remove profile
-            br
-            a(href='/logout') Logout
+          - if (user)
+            | {{ cups }} cups for
+            a(href="/" + user.user_name)= " " + user.user_name + " "
+            
+          a(href="/" + user.user_name + "/notifications")
+            .notif-box
+              - if (user.unread)
+                .notif-unread
+              - else
+                .notif-read
 
-    .profile-right
-      - if (currentUrl == '')
-        .profile-points
-          .ideas-desc-top-square {{ tentacles }}
-            h5 tentacles
-          h1 {{ cups }} cups
+      #body
+        #content
+          .profile-left(ng-controller='user_controller')
+            .profile-avatar
+              img(ng-src="{{ avatar_src }}")
+
+            .profile-name
+              b {{ fullname }}
+              br
+              a(href='http://www.github.com/{{ user_name }}') {{ user_name }}
+
+            .profile-info.profile-info-location(ng-show='location') {{ location }}
+            .profile-info.profile-info-email(ng-show='email') {{ email }}
+            .profile-info.profile-info-date(ng-show='join_date') Last seen on {{ join_date }}
+
+            .profile-numbers
+              .profile-num
+                p {{ followers }}
+                h5 followers
+              .profile-num
+                p {{ following }}
+                h5 following
+
+            .profile-links
+              - if (everyauth.loggedIn)
+                - if (user.user_name)
+                  a(href='/' + user.user_name + '/notifications') Notifications <br>
+                  a(href='#', onclick='shareOnFacebook("{{ user_name }}", "{{ cups }}")')
+                    | Share on Facebook <br>
+                  a(href="https://twitter.com/share?text=I have {{ cups }} cups", data-lang="en")
+                    | Share on Twitter <br>
+                  a(href='/{{ user_name }}/remove') Remove profile <br>
+                  a(href='/logout') Logout
+
+          .profile-right
+            - if (currentUrl == '')
+              .profile-points
+                .ideas-desc-top-square {{ tentacles }}
+                  h5 tentacles
+                h1 {{ cups }} cups
+
+              .spacer
+            - if (currentUrl == '')
+              .profile-list
+                .profile-header
+                  .profile-loader(ng-show='loading')
+                  | All public repositories
+                .profile-item(ng-repeat="r in repos", ng-click="showLogs = !showLogs")
+                  .profile-repo-icon-forked(ng-show='r.fork')
+                  .profile-repo-icon(ng-show='!r.fork')
+                  .profile-repo-name
+                    a(href='{{ r.html_url }}') {{ r.name }}
+                  .profile-repo-points(ng-show='r.points') {{ r.points }}
+                  .profile-repo-desc {{ r.description }}
+                  .profile-repo-logs(ng-show="showLogs")
+                    .profile-log(ng-show='r.fork&&r.pulls') +{{ r.points }}
+                      | for your merged pull requests in a {{ r.stars }} star repo
+
+                    .profile-log(ng-show='!r.fork') +20 cups for this personal project
+                    .profile-log(ng-show='!r.fork&&r.forks') +{{ r.forks }}
+                      | cups for the forks this repo has
+                    .profile-log(ng-show='!r.fork&&r.watchers') +{{ r.watchers }}
+                      | cups for the people watching the repo
+
+                .profile-item(ng-show='loading')
+                  | Fetching data...
+                .profile-footer(ng-show='!loading')
+                  | *Click a repo to see more details.
+
+            - if (currentUrl == 'notifications')
+              .profile-notif
+                .profile-header Your notifications
+                - if (notif.length == 0)
+                  .profile-item
+                    = "You have no new notifications."
+                - each n in notif
+                  .profile-item
+                    - if (n.type == 'idea_comm')
+                      = n.src + " commented on your "
+                        a(href=n.link) idea
+                        = ", " + n.date_f + "."
+                    - if (n.type == 'proj_comm')
+                      = n.src + " commented on your "
+                        a(href=n.link) project
+                        = ", " + n.date_f + "."
+                    - if (n.type == 'following_no')
+                      = "You have " + n.link + " following user(s)."
+                    - if (n.type == 'followers_no')
+                      = "You have " + n.link + " followers."
+                    - if (n.type == 'watch_count')
+                      = "Repo " + n.src + " " + n.link + " watcher(s). "
+                    - if (n.type == 'fork_count')
+                      = "Repo " + n.src + " " + n.link + " user fork(s). "
+                    - if (n.type == 'pull_accepted')
+                      = "Repo " + n.src + " accepted your pull request."
+                    - if (n.type == 'welcome')
+                      = "Welcome to Github-connect! Check out our "
+                        a(href=n.link) FAQ page
+                        = " to get started."
 
         .spacer
-      - if (currentUrl == '')
-        .profile-list
-          .profile-header
-            .profile-loader(ng-show='loading')
-            | All public repositories
-          .profile-item(ng-repeat="r in repos", ng-click="showLogs = !showLogs")
-            .profile-repo-icon-forked(ng-show='r.fork')
-            .profile-repo-icon(ng-show='!r.fork')
-            .profile-repo-name
-              a(href='{{ r.html_url }}') {{ r.name }}
-            .profile-repo-points(ng-show='r.points') {{ r.points }}
-            .profile-repo-desc {{ r.description }}
-            .profile-repo-logs(ng-show="showLogs")
-              .profile-log(ng-show='r.fork&&r.pulls') +{{ r.points }}
-                | for your merged pull requests in a {{ r.stars }} star repo
+        .spacer
 
-              .profile-log(ng-show='!r.fork') +20 cups for this personal project
-              .profile-log(ng-show='!r.fork&&r.forks') +{{ r.forks }}
-                | cups for the forks this repo has
-              .profile-log(ng-show='!r.fork&&r.watchers') +{{ r.watchers }}
-                | cups for the people watching the repo
-
-          .profile-item(ng-show='loading')
-            | Fetching data...
-          .profile-footer(ng-show='!loading')
-            | *Click a repo to see more details.
-
-      - if (currentUrl == 'notifications')
-        .profile-notif
-          .profile-header Your notifications
-          - if (notif.length == 0)
-            .profile-item
-              = "You have no new notifications."
-          - each n in notif
-            .profile-item
-              - if (n.type == 'idea_comm')
-                = n.src + " commented on your "
-                  a(href=n.link) idea
-                  = ", " + n.date_f + "."
-              - if (n.type == 'proj_comm')
-                = n.src + " commented on your "
-                  a(href=n.link) project
-                  = ", " + n.date_f + "."
-              - if (n.type == 'following_no')
-                = "You have " + n.link + " following user(s)."
-              - if (n.type == 'followers_no')
-                = "You have " + n.link + " followers."
-              - if (n.type == 'watch_count')
-                = "Repo " + n.src + " " + n.link + " watcher(s). "
-              - if (n.type == 'fork_count')
-                = "Repo " + n.src + " " + n.link + " user fork(s). "
-              - if (n.type == 'pull_accepted')
-                = "Repo " + n.src + " accepted your pull request."
-              - if (n.type == 'welcome')
-                = "Welcome to Github-connect! Check out our "
-                  a(href=n.link) FAQ page
-                  = " to get started."
-
-  .spacer
-  .spacer
+block angular
+  include ../public/javascripts/load_profile.js
