@@ -38,15 +38,15 @@ exports.send_mail = function (destination, type, body) {
       var mailOpt = {};
 
       if (type == 'welcome') {
-        mailOpt['from']    = "welcome@gconnect.com";
+        mailOpt['from']    = "cmarius02@gmail.com";
         mailOpt['to']      = destination,
-        mailOpt['subject'] = 'Welcome to Github-connect',
+        mailOpt['subject'] = 'Welcome to Github-balance',
         mailOpt['text']    = '',
         mailOpt['html']    = html;
       } else if (type == 'feedback') {
-        mailOpt['from']    = "welcome@gconnect.com";
+        mailOpt['from']    = "cmarius02@gmail.com";
         mailOpt['to']      = 'cmarius02@gmail.com',
-        mailOpt['subject'] = 'Feedback Github-connect: ' + body.email,
+        mailOpt['subject'] = 'Feedback Github-balance: ' + body.email,
         mailOpt['text']    = body.msg
       }
 
