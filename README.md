@@ -10,8 +10,12 @@ Share your score on facebook or twitter and see how you compete against your fri
 ## Setup
 
 ### Easy install
-For a quick setup, just run **make setup** in the root directory.
-Then **make run** will start the db and app at
+
+For a quick setup, just run:
+  -  `make setup` for Debian flavors
+  -  `make setup-rpm` for Red Hat flavors
+
+in the root directory. Then **make run** will start the db and app at
 [http://localhost:3000](http://localhost:3000).
 
 ### Manual setup
@@ -25,7 +29,7 @@ Then **make run** will start the db and app at
         apt-get install mongodb
 
   For OSX, I recommand using [MacPorts](http://www.macports.org/) for an easy install:
-  
+
         port install mongodb
 
 3. Set node environment ($NODE_ENV):
@@ -60,7 +64,7 @@ This is a list of the modules we use (package.json):
 
 
 Use package.json to install them all:
-  
+
         npm install package.json
 
 
