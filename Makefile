@@ -12,6 +12,18 @@ setup: package.json
 	mongorestore -d github-balance ghbalance_db/github-balance
 	killall mongod
 
+setup-rpm: package.json
+	sudo yum install -y nodejs npm
+	npm config set registry http://registry.npmjs.org/
+	sudo npm install
+
+	sudo yum install -y mongodb-server
+	NODE_ENV=development
+
+	sudo service mongod start &
+	mongorestore -d github-balance ghbalance_db/github-balance
+	killall mongod
+
 test:
 	@for t in $$(ls tests); do \
 		./node_modules/.bin/mocha -R spec tests/$$t; \
