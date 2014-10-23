@@ -10,9 +10,10 @@ Share your score on facebook or twitter and see how you compete against your fri
 ## Setup
 
 ### Easy install
-For a quick setup, just run
-    - **make setup** for Debian flavors
-    - **make setup-rpm** for Red Hat flavors
+
+For a quick setup, just run:
+  -  `make setup` for Debian flavors
+  -  `make setup-rpm` for Red Hat flavors
 
 in the root directory. Then **make run** will start the db and app at
 [http://localhost:3000](http://localhost:3000).
